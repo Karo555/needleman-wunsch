@@ -2,11 +2,18 @@
 import re
 from typing import Literal
 
+
 class Sequence:
     """
     A simple container for an ID and a biological sequence string.
     """
-    def __init__(self, identifier: str, sequence: str, alphabet: Literal["dna", "protein"] = "dna"):
+
+    def __init__(
+        self,
+        identifier: str,
+        sequence: str,
+        alphabet: Literal["dna", "protein"] = "dna",
+    ):
         self.id = identifier
         self.sequence = sequence.upper()
         self.alphabet = alphabet
@@ -27,8 +34,9 @@ class Sequence:
             raise ValueError(f"Unknown alphabet: {self.alphabet}")
 
         if not re.fullmatch(pat, self.sequence):
-            raise ValueError(f"Invalid characters in sequence {self.id!r} for {self.alphabet}")
-
+            raise ValueError(
+                f"Invalid characters in sequence {self.id!r} for {self.alphabet}"
+            )
 
     def __len__(self):
         # length = number of letters in the sequence

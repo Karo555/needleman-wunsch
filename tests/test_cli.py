@@ -119,3 +119,41 @@ def test_cli_json_output(tmp_path, monkeypatch):
     assert payload["sequences"]["s1"] == "A"
     assert isinstance(payload["matrix"], list)
     assert isinstance(payload["alignments"], list)
+
+
+def test_cli_html_output(tmp_path, monkeypatch):
+    import sys
+    from pathlib import Path
+
+    # Prep src/ on path
+    project = Path(__file__).parent.parent
+    monkeypatch.syspath_prepend(str(project / "src"))
+
+    # Write minimal FASTAs
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "s1.fasta").write_text(">s1\nA\n")
+    (data / "s2.fasta").write_text(">s2\nA\n")
+
+    # CWD = tmp to use relative paths
+    monkeypatch.chdir(tmp_path)
+
+    # Set argv
+    out_html = tmp_path / "report.html"
+    sys.argv = [
+        "aligner.cli",
+        "--input",
+        "data/s1.fasta",
+        "data/s2.fasta",
+        "--html",
+        str(out_html),
+    ]
+
+    import aligner.cli as cli
+
+    cli.main()
+
+    # Check file exists and contains our header
+    text = out_html.read_text()
+    assert "<h1>Needleman" in text
+    assert "Sequence 1: s1: A" in text

@@ -4,6 +4,7 @@ from typing import Dict, List, Tuple
 from src.aligner.models import Sequence
 from aligner.models import Sequence
 
+
 def read_fasta(path: str, alphabet: str = "dna") -> list[Sequence]:
     sequences = []
     header = None
@@ -29,8 +30,9 @@ def read_fasta(path: str, alphabet: str = "dna") -> list[Sequence]:
             sequences.append(Sequence(header, seq_str, alphabet))
     if not sequences:
         raise ValueError(f"No sequences found in FASTA file: {path}")
-    
+
     return sequences
+
 
 def read_manual(alphabet: str = "dna") -> tuple[Sequence, Sequence]:
     id1 = input("Sequence 1 ID: ").strip()

@@ -1,5 +1,6 @@
 import argparse
 import os
+from aligner.html_report import format_html_report
 from typing import Optional
 from src.aligner.plot import plot_matrix
 from src.aligner.core import (
@@ -92,119 +93,93 @@ def parse_args(args=None):
         help="Filename for structured JSON output",
     )
 
+    parser.add_argument(
+        "--html",
+        dest="html_out",
+        type=str,
+        default=None,
+        help="Filename for HTML summary report",
+    )
+
     return parser.parse_args(args)
 
 
 def main():
     args = parse_args()
 
-    # Ensure reports/ directory exists if an output file is specified
+    # Setup directories
     if args.output:
-        os.makedirs(os.path.dirname(args.output), exist_ok=True)
-
-    # Ensure plots/ directory exists if a plot file is specified
+        os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     if args.plot:
-        os.makedirs(os.path.dirname(args.plot), exist_ok=True)
+        os.makedirs(os.path.dirname(args.plot) or ".", exist_ok=True)
+    if args.matrix_out:
+        os.makedirs(os.path.dirname(args.matrix_out) or ".", exist_ok=True)
+    if args.json_out:
+        os.makedirs(os.path.dirname(args.json_out) or ".", exist_ok=True)
+    if args.html_out:
+        os.makedirs(os.path.dirname(args.html_out) or ".", exist_ok=True)
 
-    # 1) Load sequences (manual vs. FASTA)
+    # 1) Load sequences (using default “dna” alphabet)
     if args.manual:
         seq1, seq2 = read_manual()
     else:
-        seqs1 = read_fasta(args.input[0])
-        seqs2 = read_fasta(args.input[1])
-        if len(seqs1) != 1 or len(seqs2) != 1:
-            raise ValueError("Each FASTA file must contain exactly one record")
-        seq1, seq2 = seqs1[0], seqs2[0]
+        recs1 = read_fasta(args.input[0])
+        recs2 = read_fasta(args.input[1])
+        if len(recs1) != 1 or len(recs2) != 1:
+            raise ValueError("Each FASTA must contain exactly one record")
+        seq1, seq2 = recs1[0], recs2[0]
 
-    # 2) Build the scoring matrix
-    matrix = build_score_matrix(
-        seq1,
-        seq2,
-        match=args.match,
-        mismatch=args.mismatch,
-        gap=args.gap,
-    )
+    # 2) Build the DP matrix
+    matrix = build_score_matrix(seq1, seq2, args.match, args.mismatch, args.gap)
 
+    # 3) Optional raw‐matrix CSV
     if args.matrix_out:
-        os.makedirs(os.path.dirname(args.matrix_out) or ".", exist_ok=True)
         write_matrix(args.matrix_out, matrix)
         print(f"Score matrix CSV written to {args.matrix_out}")
 
-    # 3a) If --all-paths, enumerate and output every optimal alignment
+    # 4) Single vs all-paths
     if args.all_paths:
-        all_alignments = trace_all_paths(
-            matrix, seq1, seq2, match=args.match, mismatch=args.mismatch, gap=args.gap
-        )
-        report = format_multi_report(
-            seq1, seq2, all_alignments, args.match, args.mismatch, args.gap
-        )
-        print(report)
-        if args.output:
-            write_report(args.output, report)
-        return
-
-    # 3b) Otherwise, just produce the single optimal path
-    aln1, aln2 = single_traceback(
-        matrix,
-        seq1,
-        seq2,
-        match=args.match,
-        mismatch=args.mismatch,
-        gap=args.gap,
-    )
-
-    # 4) Format, print, and save the text report
-    report = format_report(
-        seq1,
-        seq2,
-        aln1,
-        aln2,
-        args.match,
-        args.mismatch,
-        args.gap,
-    )
-
-    print(report)
+        align_list = trace_all_paths(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
+        report_text = format_multi_report(seq1, seq2, align_list, args.match, args.mismatch, args.gap)
+    else:
+        aln1, aln2 = single_traceback(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
+        align_list = [(aln1, aln2)]
+        report_text = format_report(
+           seq1, seq2,
+           aln1, aln2,
+           args.match, args.mismatch, args.gap
+       )
+        
+        
+    # 5) Text report
+    print(report_text)
     if args.output:
-        write_report(args.output, report)
+        write_report(args.output, report_text)
+        print(f"Text report written to {args.output}")
 
-    # 5) Generate and save the heatmap if requested
+    # 6) JSON output
+    if args.json_out:
+        data = create_output_dict(seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap)
+        write_json(args.json_out, data)
+        print(f"Structured JSON written to {args.json_out}")
+
+    # 7) HTML output
+    if args.html_out:
+        # compute relative image path for embedding
+        img_ref = None
+        if args.plot:
+            img_ref = os.path.relpath(args.plot, start=os.path.dirname(args.html_out))
+        # reuse our JSON helper to get parameters + per-path stats
+        data = create_output_dict(seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap)
+        html = format_html_report(seq1, seq2, data["alignments"], data["parameters"], img_ref)
+        with open(args.html_out, "w") as f:
+            f.write(html)
+        print(f"HTML report written to {args.html_out}")
+
+    # 8) Heatmap (always last so the file exists before embedding)
     if args.plot:
         plot_matrix(matrix, args.plot)
         print(f"Heatmap saved to {args.plot}")
-
-    # 6) Structured JSON export if requested
-    if args.json_out:
-        # collect single-path or multi-path alignments into a list
-        if args.all_paths:
-            alignments = trace_all_paths(
-                matrix,
-                seq1,
-                seq2,
-                match=args.match,
-                mismatch=args.mismatch,
-                gap=args.gap,
-            )
-        else:
-            alignments = [
-                single_traceback(
-                    matrix,
-                    seq1,
-                    seq2,
-                    match=args.match,
-                    mismatch=args.mismatch,
-                    gap=args.gap,
-                )
-            ]
-
-        # make sure output folder exists
-        os.makedirs(os.path.dirname(args.json_out) or ".", exist_ok=True)
-
-        data_dict = create_output_dict(
-            seq1, seq2, matrix, alignments, args.match, args.mismatch, args.gap
-        )
-        write_json(args.json_out, data_dict)
-        print(f"Structured JSON written to {args.json_out}")
 
 
 if __name__ == "__main__":
