@@ -7,7 +7,16 @@ from src.aligner.core import (
     traceback as single_traceback,
     trace_all_paths,
 )
-from src.aligner.io import format_multi_report, format_report, read_manual, read_fasta, write_report
+from src.aligner.io import (
+    create_output_dict,
+    format_multi_report,
+    format_report,
+    read_manual,
+    read_fasta,
+    write_json,
+    write_matrix,
+    write_report,
+)
 
 
 def parse_args(args=None):
@@ -67,6 +76,22 @@ def parse_args(args=None):
         default=None,
         help="Optional filename for PNG heatmap output",
     )
+
+    parser.add_argument(
+        "--matrix-out",
+        type=str,
+        default=None,
+        help="Filename for raw score matrix output (CSV)",
+    )
+
+    parser.add_argument(
+        "--json",
+        dest="json_out",
+        type=str,
+        default=None,
+        help="Filename for structured JSON output",
+    )
+
     return parser.parse_args(args)
 
 
@@ -100,24 +125,23 @@ def main():
         gap=args.gap,
     )
 
-        # 3a) If --all-paths, enumerate and output every optimal alignment
+    if args.matrix_out:
+        os.makedirs(os.path.dirname(args.matrix_out) or ".", exist_ok=True)
+        write_matrix(args.matrix_out, matrix)
+        print(f"Score matrix CSV written to {args.matrix_out}")
+
+    # 3a) If --all-paths, enumerate and output every optimal alignment
     if args.all_paths:
         all_alignments = trace_all_paths(
-            matrix, seq1, seq2,
-            match=args.match,
-            mismatch=args.mismatch,
-            gap=args.gap
+            matrix, seq1, seq2, match=args.match, mismatch=args.mismatch, gap=args.gap
         )
         report = format_multi_report(
-            seq1, seq2,
-            all_alignments,
-            args.match, args.mismatch, args.gap
+            seq1, seq2, all_alignments, args.match, args.mismatch, args.gap
         )
         print(report)
         if args.output:
             write_report(args.output, report)
         return
-
 
     # 3b) Otherwise, just produce the single optimal path
     aln1, aln2 = single_traceback(
@@ -131,13 +155,14 @@ def main():
 
     # 4) Format, print, and save the text report
     report = format_report(
-        seq1, seq2,
-        aln1, aln2,
+        seq1,
+        seq2,
+        aln1,
+        aln2,
         args.match,
         args.mismatch,
         args.gap,
     )
-
 
     print(report)
     if args.output:
@@ -147,6 +172,39 @@ def main():
     if args.plot:
         plot_matrix(matrix, args.plot)
         print(f"Heatmap saved to {args.plot}")
+
+    # 6) Structured JSON export if requested
+    if args.json_out:
+        # collect single-path or multi-path alignments into a list
+        if args.all_paths:
+            alignments = trace_all_paths(
+                matrix,
+                seq1,
+                seq2,
+                match=args.match,
+                mismatch=args.mismatch,
+                gap=args.gap,
+            )
+        else:
+            alignments = [
+                single_traceback(
+                    matrix,
+                    seq1,
+                    seq2,
+                    match=args.match,
+                    mismatch=args.mismatch,
+                    gap=args.gap,
+                )
+            ]
+
+        # make sure output folder exists
+        os.makedirs(os.path.dirname(args.json_out) or ".", exist_ok=True)
+
+        data_dict = create_output_dict(
+            seq1, seq2, matrix, alignments, args.match, args.mismatch, args.gap
+        )
+        write_json(args.json_out, data_dict)
+        print(f"Structured JSON written to {args.json_out}")
 
 
 if __name__ == "__main__":

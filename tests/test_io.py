@@ -1,6 +1,13 @@
 import re
 import pytest
-from src.aligner.io import format_multi_report, format_report, write_report, read_fasta, read_manual
+from aligner.io import write_matrix
+from src.aligner.io import (
+    format_multi_report,
+    format_report,
+    write_report,
+    read_fasta,
+    read_manual,
+)
 from src.aligner.models import Sequence
 
 
@@ -98,12 +105,10 @@ def test_format_multi_report(tmp_path):
     seq2 = Sequence("s2", "AG")
     # We expect two paths: one with no gaps, one with two gaps
     alignments = [
-        ("GA", "AG"),   # Path 1: length=2, matches=0, identity=0.00%, gaps=0
-        ("-GA", "GA-")  # Path 2: length=3, matches=1, identity=33.33%, gaps=2
+        ("GA", "AG"),  # Path 1: length=2, matches=0, identity=0.00%, gaps=0
+        ("-GA", "GA-"),  # Path 2: length=3, matches=1, identity=33.33%, gaps=2
     ]
-    report = format_multi_report(
-        seq1, seq2, alignments, match=1, mismatch=-1, gap=-1
-    )
+    report = format_multi_report(seq1, seq2, alignments, match=1, mismatch=-1, gap=-1)
 
     # Header checks
     assert "Needleman–Wunsch Multi‐Path Alignment Report" in report
@@ -132,3 +137,48 @@ def test_format_multi_report(tmp_path):
     write_report(str(out_file), report)
     text = out_file.read_text()
     assert "Path 1:" in text and "Path 2:" in text
+
+
+def test_write_matrix(tmp_path):
+    matrix = [
+        [0, -1, -2],
+        [-1, 1, 0],
+        [-2, 0, 2],
+    ]
+    out_file = tmp_path / "matrix.csv"
+    write_matrix(str(out_file), matrix)
+
+    lines = out_file.read_text().splitlines()
+    assert lines == [
+        "0,-1,-2",
+        "-1,1,0",
+        "-2,0,2",
+    ]
+
+
+import json
+from aligner.models import Sequence
+from aligner.io import create_output_dict, write_json
+
+
+def test_create_output_dict_and_write_json(tmp_path):
+    seq1 = Sequence("s1", "A")
+    seq2 = Sequence("s2", "A")
+    matrix = [[0, -1], [-1, 1]]
+    alignments = [("A", "A")]
+
+    data = create_output_dict(
+        seq1, seq2, matrix, alignments, match=1, mismatch=-1, gap=-1
+    )
+    # basic sanity checks
+    assert data["parameters"] == {"match": 1, "mismatch": -1, "gap": -1}
+    assert data["sequences"] == {"s1": "A", "s2": "A"}
+    assert data["matrix"] == matrix
+    assert isinstance(data["alignments"], list)
+    assert data["alignments"][0]["aligned_seq1"] == "A"
+
+    # write to file and reload
+    out = tmp_path / "out.json"
+    write_json(str(out), data)
+    loaded = json.loads(out.read_text())
+    assert loaded == data

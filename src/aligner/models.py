@@ -1,36 +1,38 @@
-from typing import ClassVar, Set
-
+# src/aligner/models.py
+import re
+from typing import Literal
 
 class Sequence:
     """
-    Represents a biological sequence with validation against DNA or protein alphabets.
+    A simple container for an ID and a biological sequence string.
     """
-
-    dna_alphabet: ClassVar[Set[str]] = set("ACGT")
-    protein_alphabet: ClassVar[Set[str]] = set("ARNDCQEGHILKMFPSTWYV")
-
-    def __init__(self, identifier: str, sequence: str, alphabet: str = "dna"):
-        """
-        :param identifier: a unique name or header for the sequence
-        :param sequence: the raw sequence string (will be uppercased)
-        :param alphabet: "dna" or "protein"
-        """
+    def __init__(self, identifier: str, sequence: str, alphabet: Literal["dna", "protein"] = "dna"):
         self.id = identifier
-        self.sequence = sequence.strip().upper()
+        self.sequence = sequence.upper()
+        self.alphabet = alphabet
+        self._validate()
 
-        if alphabet == "dna":
-            valid_chars = self.dna_alphabet
-        elif alphabet == "protein":
-            valid_chars = self.protein_alphabet
+    def _validate(self):
+        """
+        Ensure the sequence contains only valid characters for the chosen alphabet.
+        Empty sequences are now allowed.
+        """
+        if self.alphabet.lower() == "dna":
+            # Allow zero or more A/C/G/T characters
+            pat = r"^[ACGTacgt]*$"
+        elif self.alphabet.lower() == "protein":
+            # Allow zero or more of the 20 standard amino acids
+            pat = r"^[ACDEFGHIKLMNPQRSTVWYacdefghiklmnpqrstvwy]*$"
         else:
-            raise ValueError(f"Unknown alphabet: '{alphabet}'")
+            raise ValueError(f"Unknown alphabet: {self.alphabet}")
 
-        invalid = set(self.sequence) - valid_chars
-        if invalid:
-            raise ValueError(f"Invalid characters for {alphabet} alphabet: {invalid}")
+        if not re.fullmatch(pat, self.sequence):
+            raise ValueError(f"Invalid characters in sequence {self.id!r} for {self.alphabet}")
 
-    def __len__(self) -> int:
+
+    def __len__(self):
+        # length = number of letters in the sequence
         return len(self.sequence)
 
-    def __repr__(self) -> str:
-        return f"Sequence(id={self.id!r}, length={len(self)})"
+    def __repr__(self):
+        return f"Sequence(id={self.id!r}, sequence={self.sequence!r})"
