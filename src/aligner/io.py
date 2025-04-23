@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from src.aligner.models import Sequence
 
 
@@ -39,3 +39,20 @@ def read_fasta(path: str, alphabet: str = "dna") -> List[Sequence]:
         raise ValueError("No FASTA records found in file")
 
     return records
+
+
+def read_manual(alphabet: str = "dna") -> Tuple[Sequence, Sequence]:
+    """
+    Prompt the user to manually enter two sequences and return as Sequence objects.
+    :param alphabet: "dna" or "protein"
+    """
+    print("Enter two sequences for alignment (alphabet: {}):".format(alphabet))
+    id1 = input("Identifier for sequence 1: ").strip()
+    seq1 = input("Sequence 1: ").strip()
+    id2 = input("Identifier for sequence 2: ").strip()
+    seq2 = input("Sequence 2: ").strip()
+
+    # Validate using Sequence class
+    s1 = Sequence(id1, seq1, alphabet)
+    s2 = Sequence(id2, seq2, alphabet)
+    return s1, s2

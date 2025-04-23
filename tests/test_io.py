@@ -1,5 +1,5 @@
 import pytest
-from src.aligner.io import read_fasta
+from src.aligner.io import read_fasta, read_manual
 from src.aligner.models import Sequence
 
 
@@ -52,3 +52,22 @@ def test_read_fasta_protein(tmp_path):
     seq = records[0]
     assert seq.id == "prot1"
     assert seq.sequence == "ARNDCQ"
+
+
+def test_read_manual_valid(monkeypatch):
+    inputs = iter(["seqA", "acgt", "seqB", "tttt"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+    s1, s2 = read_manual()
+    assert isinstance(s1, Sequence) and isinstance(s2, Sequence)
+    assert s1.id == "seqA"
+    assert s1.sequence == "ACGT"
+    assert s2.id == "seqB"
+    assert s2.sequence == "TTTT"
+
+
+def test_read_manual_invalid(monkeypatch):
+    # Invalid char in seq1
+    inputs = iter(["seqA", "ACGTX", "seqB", "TTTT"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
+    with pytest.raises(ValueError):
+        read_manual()
