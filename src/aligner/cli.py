@@ -3,6 +3,7 @@ import os
 from aligner.html_report import format_html_report
 from typing import Optional
 from src.aligner.plot import plot_matrix
+from aligner.pdf_report import write_pdf
 from src.aligner.core import (
     build_score_matrix,
     traceback as single_traceback,
@@ -101,6 +102,14 @@ def parse_args(args=None):
         help="Filename for HTML summary report",
     )
 
+    parser.add_argument(
+        "--pdf",
+        dest="pdf_out",
+        type=str,
+        default=None,
+        help="Filename for PDF summary report",
+    )
+
     return parser.parse_args(args)
 
 
@@ -139,18 +148,21 @@ def main():
 
     # 4) Single vs all-paths
     if args.all_paths:
-        align_list = trace_all_paths(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
-        report_text = format_multi_report(seq1, seq2, align_list, args.match, args.mismatch, args.gap)
+        align_list = trace_all_paths(
+            matrix, seq1, seq2, args.match, args.mismatch, args.gap
+        )
+        report_text = format_multi_report(
+            seq1, seq2, align_list, args.match, args.mismatch, args.gap
+        )
     else:
-        aln1, aln2 = single_traceback(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
+        aln1, aln2 = single_traceback(
+            matrix, seq1, seq2, args.match, args.mismatch, args.gap
+        )
         align_list = [(aln1, aln2)]
         report_text = format_report(
-           seq1, seq2,
-           aln1, aln2,
-           args.match, args.mismatch, args.gap
-       )
-        
-        
+            seq1, seq2, aln1, aln2, args.match, args.mismatch, args.gap
+        )
+
     # 5) Text report
     print(report_text)
     if args.output:
@@ -159,7 +171,9 @@ def main():
 
     # 6) JSON output
     if args.json_out:
-        data = create_output_dict(seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap)
+        data = create_output_dict(
+            seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
+        )
         write_json(args.json_out, data)
         print(f"Structured JSON written to {args.json_out}")
 
@@ -170,8 +184,12 @@ def main():
         if args.plot:
             img_ref = os.path.relpath(args.plot, start=os.path.dirname(args.html_out))
         # reuse our JSON helper to get parameters + per-path stats
-        data = create_output_dict(seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap)
-        html = format_html_report(seq1, seq2, data["alignments"], data["parameters"], img_ref)
+        data = create_output_dict(
+            seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
+        )
+        html = format_html_report(
+            seq1, seq2, data["alignments"], data["parameters"], img_ref
+        )
         with open(args.html_out, "w") as f:
             f.write(html)
         print(f"HTML report written to {args.html_out}")
@@ -180,6 +198,22 @@ def main():
     if args.plot:
         plot_matrix(matrix, args.plot)
         print(f"Heatmap saved to {args.plot}")
+
+    # 9) PDF summary export if requested
+    if args.pdf_out:
+        # align_list and data already computed above
+        data = create_output_dict(
+            seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
+        )
+        write_pdf(
+            args.pdf_out,
+            seq1,
+            seq2,
+            data["alignments"],
+            data["parameters"],
+            args.plot,  # pass the heatmap PNG path so it embeds
+        )
+        print(f"PDF report written to {args.pdf_out}")
 
 
 if __name__ == "__main__":

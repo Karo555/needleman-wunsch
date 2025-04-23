@@ -157,3 +157,38 @@ def test_cli_html_output(tmp_path, monkeypatch):
     text = out_html.read_text()
     assert "<h1>Needleman" in text
     assert "Sequence 1: s1: A" in text
+
+
+def test_cli_pdf_output(tmp_path, monkeypatch):
+    # Prep src/ on path
+    project = Path(__file__).parent.parent
+    monkeypatch.syspath_prepend(str(project / "src"))
+
+    # Write minimal FASTAs
+    data = tmp_path / "data"
+    data.mkdir()
+    (data / "s1.fasta").write_text(">s1\nA\n")
+    (data / "s2.fasta").write_text(">s2\nA\n")
+
+    # CWD = tmp so relative paths work
+    monkeypatch.chdir(tmp_path)
+
+    # CLI args
+    out_pdf = tmp_path / "report.pdf"
+    sys.argv = [
+        "aligner.cli",
+        "--input",
+        "data/s1.fasta",
+        "data/s2.fasta",
+        "--pdf",
+        str(out_pdf),
+        "--plot",
+        "plots/heatmap.png",
+    ]
+
+    import aligner.cli as cli
+
+    cli.main()
+
+    # Verify PDF was created
+    assert out_pdf.exists() and out_pdf.stat().st_size > 0
