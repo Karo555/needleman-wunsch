@@ -1,0 +1,7 @@
+Path 1:
+ACGTACGT
+GATTAC-A
+
+Path 2:
+ACGTACGT
+GATTACA-

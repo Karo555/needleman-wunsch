@@ -110,11 +110,15 @@ def traceback(
     aligned2.reverse()
     return "".join(aligned1), "".join(aligned2)
 
+
 def trace_all_paths(
     matrix: List[List[int]],
-    seq1: Sequence, seq2: Sequence,
-    match: int, mismatch: int, gap: int,
-    max_paths: int = 100
+    seq1: Sequence,
+    seq2: Sequence,
+    match: int,
+    mismatch: int,
+    gap: int,
+    max_paths: int = 100,
 ) -> List[Tuple[str, str]]:
     """
     Enumerate all optimal alignment paths through the scoring matrix.
@@ -144,9 +148,9 @@ def trace_all_paths(
             if matrix[i][j] == score_diag:
                 recurse(i - 1, j - 1, a1 + [char1], a2 + [char2])
         if i > 0 and matrix[i][j] == matrix[i - 1][j] + gap:
-            recurse(i - 1, j, a1 + [seq1.sequence[i - 1]], a2 + ['-'])
+            recurse(i - 1, j, a1 + [seq1.sequence[i - 1]], a2 + ["-"])
         if j > 0 and matrix[i][j] == matrix[i][j - 1] + gap:
-            recurse(i, j - 1, a1 + ['-'], a2 + [seq2.sequence[j - 1]])
+            recurse(i, j - 1, a1 + ["-"], a2 + [seq2.sequence[j - 1]])
 
     recurse(n, m, [], [])
     return paths

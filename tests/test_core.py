@@ -49,6 +49,7 @@ def test_traceback_gap():
     assert aln1 == "A"
     assert aln2 == "-"
 
+
 def test_trace_all_paths_gap_variants():
     s1 = Sequence("s1", "AG")
     s2 = Sequence("s2", "A")

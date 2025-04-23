@@ -1,9 +1,12 @@
 import argparse
 import os
 from typing import Optional
-
 from src.aligner.plot import plot_matrix
-from src.aligner.core import build_score_matrix, traceback
+from src.aligner.core import (
+    build_score_matrix,
+    traceback as single_traceback,
+    trace_all_paths,
+)
 from src.aligner.io import format_report, read_manual, read_fasta, write_report
 
 
@@ -51,6 +54,13 @@ def parse_args(args=None):
         default=None,
         help="Optional custom filename for text output report",
     )
+
+    parser.add_argument(
+        "--all-paths",
+        action="store_true",
+        help="Enumerate and output all optimal alignments",
+    )
+
     parser.add_argument(
         "--plot",
         type=str,
@@ -61,72 +71,85 @@ def parse_args(args=None):
 
 
 def main():
-    """
-    Entry point for console script. Parses args, loads sequences, and prepares for alignment.
-    """
     args = parse_args()
-    # Default alphabet is DNA
-    alphabet = "dna"
 
-    # Load sequences from manual input or FASTA files
+    # Ensure reports/ directory exists if an output file is specified
+    if args.output:
+        os.makedirs(os.path.dirname(args.output), exist_ok=True)
+
+    # Ensure plots/ directory exists if a plot file is specified
+    if args.plot:
+        os.makedirs(os.path.dirname(args.plot), exist_ok=True)
+
+    # 1) Load sequences (manual vs. FASTA)
     if args.manual:
-        seq1, seq2 = read_manual(alphabet)
+        seq1, seq2 = read_manual()
     else:
-        fasta1, fasta2 = args.input  # type: ignore
-        seqs1 = read_fasta(fasta1, alphabet)
-        seqs2 = read_fasta(fasta2, alphabet)
+        seqs1 = read_fasta(args.input[0])
+        seqs2 = read_fasta(args.input[1])
         if len(seqs1) != 1 or len(seqs2) != 1:
             raise ValueError("Each FASTA file must contain exactly one record")
         seq1, seq2 = seqs1[0], seqs2[0]
 
-    # For now, just print loaded sequences; next we'll run alignment
-    print("Loaded sequences:")
-    print(f"  {seq1.id}: {seq1.sequence}")
-    print(f"  {seq2.id}: {seq2.sequence}")
+    # 2) Build the scoring matrix
+    matrix = build_score_matrix(
+        seq1,
+        seq2,
+        match=args.match,
+        mismatch=args.mismatch,
+        gap=args.gap,
+    )
 
-    # Run alignment
-    matrix = build_score_matrix(seq1, seq2, args.match, args.mismatch, args.gap)
-    aln1, aln2 = traceback(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
-
-    # Display alignment
-    print("\nOptimal Alignment:")
-    print(aln1)
-    print(aln2)
-
-    # Format report
-    report = format_report(seq1, seq2, aln1, aln2, args.match, args.mismatch, args.gap)
-
-    # Prepare output filename
-    # Ensure reports directory exists
-    reports_dir = "reports"
-    os.makedirs(reports_dir, exist_ok=True)
-    if args.output:
-        output_file = (
-            os.path.join(reports_dir, args.output)
-            if not args.output.startswith(reports_dir)
-            else args.output
+    # 3a) If --all-paths, enumerate and output every optimal alignment
+    if args.all_paths:
+        all_alignments = trace_all_paths(
+            matrix, seq1, seq2, match=args.match, mismatch=args.mismatch, gap=args.gap
         )
-    else:
-        # default name: seq1_seq2_m<M>_mm<MM>_g<gap>.txt
-        fname = f"{seq1.id}_{seq2.id}_m{args.match}_mm{args.mismatch}_g{args.gap}.txt"
-        output_file = os.path.join(reports_dir, fname)
 
-    # Print and write report
+        print(f"\nFound {len(all_alignments)} optimal alignment(s):\n")
+        for idx, (aln1, aln2) in enumerate(all_alignments, start=1):
+            print(f"Path {idx}:")
+            print(aln1)
+            print(aln2)
+            print()
+
+        if args.output:
+            report_txt = "\n".join(
+                f"Path {i+1}:\n{a1}\n{a2}\n"
+                for i, (a1, a2) in enumerate(all_alignments)
+            )
+            write_report(args.output, report_txt)
+
+        return
+
+    # 3b) Otherwise, just produce the single optimal path
+    aln1, aln2 = single_traceback(
+        matrix,
+        seq1,
+        seq2,
+        match=args.match,
+        mismatch=args.mismatch,
+        gap=args.gap,
+    )
+
+    # 4) Format, print, and save the text report
+    report = format_report(
+        seq1, seq2,
+        aln1, aln2,
+        args.match,
+        args.mismatch,
+        args.gap,
+    )
+
+
     print(report)
-    write_report(output_file, report)
-    print(f"Report written to {output_file}")
+    if args.output:
+        write_report(args.output, report)
 
-    # Handle plotting
+    # 5) Generate and save the heatmap if requested
     if args.plot:
-        plots_dir = "plots"
-        os.makedirs(plots_dir, exist_ok=True)
-        plot_file = (
-            args.plot
-            if os.path.isabs(args.plot) or args.plot.startswith(plots_dir)
-            else os.path.join(plots_dir, args.plot)
-        )
-        plot_matrix(matrix, plot_file)
-        print(f"Heatmap saved to {plot_file}")
+        plot_matrix(matrix, args.plot)
+        print(f"Heatmap saved to {args.plot}")
 
 
 if __name__ == "__main__":
