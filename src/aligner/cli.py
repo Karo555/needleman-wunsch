@@ -2,6 +2,7 @@ import argparse
 import os
 from typing import Optional
 
+from src.aligner.plot import plot_matrix
 from src.aligner.core import build_score_matrix, traceback
 from src.aligner.io import format_report, read_manual, read_fasta, write_report
 
@@ -53,8 +54,8 @@ def parse_args(args=None):
     parser.add_argument(
         "--plot",
         type=str,
-        metavar="FILE",
-        help="Optional filename for heatmap PNG output",
+        default=None,
+        help="Optional filename for PNG heatmap output",
     )
     return parser.parse_args(args)
 
@@ -115,7 +116,17 @@ def main():
     write_report(output_file, report)
     print(f"Report written to {output_file}")
 
-    # TODO: handle plotting with --plot
+    # Handle plotting
+    if args.plot:
+        plots_dir = "plots"
+        os.makedirs(plots_dir, exist_ok=True)
+        plot_file = (
+            args.plot
+            if os.path.isabs(args.plot) or args.plot.startswith(plots_dir)
+            else os.path.join(plots_dir, args.plot)
+        )
+        plot_matrix(matrix, plot_file)
+        print(f"Heatmap saved to {plot_file}")
 
 
 if __name__ == "__main__":

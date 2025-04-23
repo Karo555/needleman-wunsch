@@ -2,11 +2,7 @@ import matplotlib.pyplot as plt
 from typing import List
 
 
-def plot_matrix(
-    matrix: List[List[int]],
-    path: str,
-    show: bool = False
-) -> plt.Figure:
+def plot_matrix(matrix: List[List[int]], path: str, show: bool = False) -> plt.Figure:
     """
     Plot the scoring matrix as a heatmap and save to the specified path.
 
@@ -16,11 +12,11 @@ def plot_matrix(
     :return: Matplotlib Figure object
     """
     fig, ax = plt.subplots()
-    cax = ax.imshow(matrix, interpolation='nearest', aspect='auto')
+    cax = ax.imshow(matrix, interpolation="nearest", aspect="auto")
     fig.colorbar(cax, ax=ax)
-    ax.set_xlabel('Sequence 2 position')
-    ax.set_ylabel('Sequence 1 position')
-    ax.set_title('Scoring Matrix Heatmap')
+    ax.set_xlabel("Sequence 2 position")
+    ax.set_ylabel("Sequence 1 position")
+    ax.set_title("Scoring Matrix Heatmap")
     fig.tight_layout()
     fig.savefig(path)
     if show:

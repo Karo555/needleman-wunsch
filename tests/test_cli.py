@@ -3,10 +3,19 @@ from src.aligner.cli import parse_args
 
 
 def test_parse_args_input():
-    args = parse_args([
-        "--input", "file1.fasta", "file2.fasta",
-        "--match", "2", "--mismatch", "-1", "--gap", "-3"
-    ])
+    args = parse_args(
+        [
+            "--input",
+            "file1.fasta",
+            "file2.fasta",
+            "--match",
+            "2",
+            "--mismatch",
+            "-1",
+            "--gap",
+            "-3",
+        ]
+    )
     assert args.input == ["file1.fasta", "file2.fasta"]
     assert not args.manual
     assert args.match == 2
@@ -30,4 +39,3 @@ def test_help_shows_usage(capsys):
     assert excinfo.value.code == 0
     captured = capsys.readouterr()
     assert "usage:" in captured.out.lower()
-

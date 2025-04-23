@@ -1,6 +1,7 @@
 import os
 from src.aligner.plot import plot_matrix
 
+
 def test_plot_matrix(tmp_path):
     # Simple 2x2 matrix
     matrix = [[0, -1], [-1, 1]]
