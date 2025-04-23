@@ -7,7 +7,7 @@ from src.aligner.core import (
     traceback as single_traceback,
     trace_all_paths,
 )
-from src.aligner.io import format_report, read_manual, read_fasta, write_report
+from src.aligner.io import format_multi_report, format_report, read_manual, read_fasta, write_report
 
 
 def parse_args(args=None):
@@ -100,27 +100,24 @@ def main():
         gap=args.gap,
     )
 
-    # 3a) If --all-paths, enumerate and output every optimal alignment
+        # 3a) If --all-paths, enumerate and output every optimal alignment
     if args.all_paths:
         all_alignments = trace_all_paths(
-            matrix, seq1, seq2, match=args.match, mismatch=args.mismatch, gap=args.gap
+            matrix, seq1, seq2,
+            match=args.match,
+            mismatch=args.mismatch,
+            gap=args.gap
         )
-
-        print(f"\nFound {len(all_alignments)} optimal alignment(s):\n")
-        for idx, (aln1, aln2) in enumerate(all_alignments, start=1):
-            print(f"Path {idx}:")
-            print(aln1)
-            print(aln2)
-            print()
-
+        report = format_multi_report(
+            seq1, seq2,
+            all_alignments,
+            args.match, args.mismatch, args.gap
+        )
+        print(report)
         if args.output:
-            report_txt = "\n".join(
-                f"Path {i+1}:\n{a1}\n{a2}\n"
-                for i, (a1, a2) in enumerate(all_alignments)
-            )
-            write_report(args.output, report_txt)
-
+            write_report(args.output, report)
         return
+
 
     # 3b) Otherwise, just produce the single optimal path
     aln1, aln2 = single_traceback(

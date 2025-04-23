@@ -1,5 +1,6 @@
+import re
 import pytest
-from src.aligner.io import format_report, write_report, read_fasta, read_manual
+from src.aligner.io import format_multi_report, format_report, write_report, read_fasta, read_manual
 from src.aligner.models import Sequence
 
 
@@ -90,3 +91,44 @@ def test_write_report_and_format(tmp_path):
     out_file = tmp_path / "report.txt"
     write_report(str(out_file), report)
     assert out_file.read_text() == report
+
+
+def test_format_multi_report(tmp_path):
+    seq1 = Sequence("s1", "GA")
+    seq2 = Sequence("s2", "AG")
+    # We expect two paths: one with no gaps, one with two gaps
+    alignments = [
+        ("GA", "AG"),   # Path 1: length=2, matches=0, identity=0.00%, gaps=0
+        ("-GA", "GA-")  # Path 2: length=3, matches=1, identity=33.33%, gaps=2
+    ]
+    report = format_multi_report(
+        seq1, seq2, alignments, match=1, mismatch=-1, gap=-1
+    )
+
+    # Header checks
+    assert "Needleman–Wunsch Multi‐Path Alignment Report" in report
+    assert "match=1, mismatch=-1, gap=-1" in report
+    assert "Sequence 1: s1  GA" in report
+    assert "Sequence 2: s2  AG" in report
+
+    # Path 1 stats
+    assert "Path 1:" in report
+    assert "GA" in report.split("Path 1:")[1]
+    assert "AG" in report.split("Path 1:")[1]
+    assert "Length: 2" in report
+    assert "Identical positions: 0 (0.00%)" in report
+    assert "Total gaps: 0" in report
+
+    # Path 2 stats
+    assert "Path 2:" in report
+    assert "-GA" in report.split("Path 2:")[1]
+    assert "GA-" in report.split("Path 2:")[1]
+    assert "Length: 3" in report
+    assert "Identical positions: 0 (0.00%)" in report
+    assert "Total gaps: 0" in report
+
+    # Test that write_report actually writes it out
+    out_file = tmp_path / "multi_report.txt"
+    write_report(str(out_file), report)
+    text = out_file.read_text()
+    assert "Path 1:" in text and "Path 2:" in text

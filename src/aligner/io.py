@@ -104,3 +104,52 @@ def format_report(
         f"  Total gaps: {total_gaps}",
     ]
     return "\n".join(lines)
+
+
+def format_multi_report(
+    seq1: Sequence,
+    seq2: Sequence,
+    alignments: List[Tuple[str, str]],
+    match: int,
+    mismatch: int,
+    gap: int
+) -> str:
+    """
+    Build a multi‐path alignment report.
+
+    Parameters
+    ----------
+    seq1, seq2
+        The original Sequence objects.
+    alignments
+        List of (aligned_seq1, aligned_seq2) tuples.
+    match, mismatch, gap
+        Scoring parameters.
+    """
+    lines: List[str] = []
+
+    # Header with parameters and raw sequences
+    lines.append("Needleman–Wunsch Multi‐Path Alignment Report")
+    lines.append(f"Parameters: match={match}, mismatch={mismatch}, gap={gap}")
+    lines.append(f"Sequence 1: {seq1.id}  {seq1.sequence}")
+    lines.append(f"Sequence 2: {seq2.id}  {seq2.sequence}")
+    lines.append("")  # blank line
+
+    # One block per alignment path
+    for idx, (aln1, aln2) in enumerate(alignments, start=1):
+        length = len(aln1)
+        matches = sum(
+            1 for a, b in zip(aln1, aln2) if a == b and a != "-"
+        )
+        identity_pct = matches / length * 100
+        gaps = aln1.count("-") + aln2.count("-")
+
+        lines.append(f"Path {idx}:")
+        lines.append(aln1)
+        lines.append(aln2)
+        lines.append(f"Length: {length}")
+        lines.append(f"Identical positions: {matches} ({identity_pct:.2f}%)")
+        lines.append(f"Total gaps: {gaps}")
+        lines.append("")  # blank line between paths
+
+    return "\n".join(lines)
