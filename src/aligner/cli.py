@@ -1,6 +1,7 @@
 import argparse
 from typing import Optional
 
+from src.aligner.core import build_score_matrix, traceback
 from src.aligner.io import read_manual, read_fasta
 
 
@@ -80,6 +81,17 @@ def main():
     print("Loaded sequences:")
     print(f"  {seq1.id}: {seq1.sequence}")
     print(f"  {seq2.id}: {seq2.sequence}")
+
+    # Run alignment
+    matrix = build_score_matrix(seq1, seq2, args.match, args.mismatch, args.gap)
+    aln1, aln2 = traceback(matrix, seq1, seq2, args.match, args.mismatch, args.gap)
+
+    # Display alignment
+    print("\nOptimal Alignment:")
+    print(aln1)
+    print(aln2)
+
+    # TODO: compute stats and write report
 
 
 if __name__ == "__main__":

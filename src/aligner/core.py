@@ -3,8 +3,7 @@ from src.aligner.models import Sequence
 
 
 def build_score_matrix(
-    seq1: Sequence, seq2: Sequence,
-    match: int, mismatch: int, gap: int
+    seq1: Sequence, seq2: Sequence, match: int, mismatch: int, gap: int
 ) -> List[List[int]]:
     """
     Build and return the scoring matrix for global alignment using
@@ -50,11 +49,13 @@ def build_score_matrix(
     return matrix
 
 
-
 def traceback(
     matrix: List[List[int]],
-    seq1: Sequence, seq2: Sequence,
-    match: int, mismatch: int, gap: int
+    seq1: Sequence,
+    seq2: Sequence,
+    match: int,
+    mismatch: int,
+    gap: int,
 ) -> Tuple[str, str]:
     """
     Perform a traceback through the scoring matrix to recover one optimal alignment.
@@ -92,12 +93,12 @@ def traceback(
         # check if coming from up (gap in seq2)
         if i > 0 and matrix[i][j] == matrix[i - 1][j] + gap:
             aligned1.append(seq1.sequence[i - 1])
-            aligned2.append('-')
+            aligned2.append("-")
             i -= 1
             continue
         # otherwise, must be coming from left (gap in seq1)
         if j > 0 and matrix[i][j] == matrix[i][j - 1] + gap:
-            aligned1.append('-')
+            aligned1.append("-")
             aligned2.append(seq2.sequence[j - 1])
             j -= 1
             continue
@@ -107,4 +108,4 @@ def traceback(
     # Reverse to get the correct order
     aligned1.reverse()
     aligned2.reverse()
-    return ''.join(aligned1), ''.join(aligned2)
+    return "".join(aligned1), "".join(aligned2)
