@@ -1,0 +1,2 @@
+# needleman-wunsch
+bIOINFORMATICS @WUST
