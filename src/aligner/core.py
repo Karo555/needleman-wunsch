@@ -109,3 +109,44 @@ def traceback(
     aligned1.reverse()
     aligned2.reverse()
     return "".join(aligned1), "".join(aligned2)
+
+def trace_all_paths(
+    matrix: List[List[int]],
+    seq1: Sequence, seq2: Sequence,
+    match: int, mismatch: int, gap: int,
+    max_paths: int = 100
+) -> List[Tuple[str, str]]:
+    """
+    Enumerate all optimal alignment paths through the scoring matrix.
+
+    :param matrix: Scoring matrix from build_score_matrix
+    :param seq1: First sequence
+    :param seq2: Second sequence
+    :param match: Score for a match
+    :param mismatch: Score for a mismatch
+    :param gap: Gap penalty
+    :param max_paths: Maximum number of alignments to return
+    :return: List of tuples of aligned strings
+    """
+    n, m = len(seq1), len(seq2)
+    paths: List[Tuple[str, str]] = []
+
+    def recurse(i: int, j: int, a1: List[str], a2: List[str]):
+        if len(paths) >= max_paths:
+            return
+        if i == 0 and j == 0:
+            paths.append(("".join(reversed(a1)), "".join(reversed(a2))))
+            return
+        if i > 0 and j > 0:
+            char1 = seq1.sequence[i - 1]
+            char2 = seq2.sequence[j - 1]
+            score_diag = matrix[i - 1][j - 1] + (match if char1 == char2 else mismatch)
+            if matrix[i][j] == score_diag:
+                recurse(i - 1, j - 1, a1 + [char1], a2 + [char2])
+        if i > 0 and matrix[i][j] == matrix[i - 1][j] + gap:
+            recurse(i - 1, j, a1 + [seq1.sequence[i - 1]], a2 + ['-'])
+        if j > 0 and matrix[i][j] == matrix[i][j - 1] + gap:
+            recurse(i, j - 1, a1 + ['-'], a2 + [seq2.sequence[j - 1]])
+
+    recurse(n, m, [], [])
+    return paths

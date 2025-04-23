@@ -1,6 +1,6 @@
 import pytest
 from src.aligner.models import Sequence
-from src.aligner.core import build_score_matrix, traceback
+from src.aligner.core import build_score_matrix, trace_all_paths, traceback
 
 
 def test_build_score_matrix_single_match():
@@ -48,3 +48,12 @@ def test_traceback_gap():
     aln1, aln2 = traceback(mat, s1, s2, match=1, mismatch=-1, gap=-2)
     assert aln1 == "A"
     assert aln2 == "-"
+
+def test_trace_all_paths_gap_variants():
+    s1 = Sequence("s1", "AG")
+    s2 = Sequence("s2", "A")
+    mat = build_score_matrix(s1, s2, match=1, mismatch=-1, gap=-1)
+    paths = trace_all_paths(mat, s1, s2, match=1, mismatch=-1, gap=-1)
+    # Only one optimal alignment exists here:
+    expected = {("AG", "A-")}
+    assert set(paths) == expected
