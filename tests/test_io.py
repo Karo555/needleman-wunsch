@@ -1,5 +1,5 @@
 import pytest
-from src.aligner.io import read_fasta, read_manual
+from src.aligner.io import format_report, write_report, read_fasta, read_manual
 from src.aligner.models import Sequence
 
 
@@ -71,3 +71,22 @@ def test_read_manual_invalid(monkeypatch):
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
     with pytest.raises(ValueError):
         read_manual()
+
+
+def test_write_report_and_format(tmp_path):
+    seq1 = Sequence("s1", "A")
+    seq2 = Sequence("s2", "A")
+    aligned1, aligned2 = "A", "A"
+    match, mismatch, gap = 1, -1, -1
+    report = format_report(seq1, seq2, aligned1, aligned2, match, mismatch, gap)
+    # Verify key report contents
+    assert "Match score: 1" in report
+    assert "Mismatch score: -1" in report
+    assert "Gap penalty: -1" in report
+    assert "s1: A" in report
+    assert "s2: A" in report
+    assert "Alignment length: 1" in report
+    assert "Identical positions: 1" in report
+    out_file = tmp_path / "report.txt"
+    write_report(str(out_file), report)
+    assert out_file.read_text() == report

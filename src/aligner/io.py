@@ -56,3 +56,51 @@ def read_manual(alphabet: str = "dna") -> Tuple[Sequence, Sequence]:
     s1 = Sequence(id1, seq1, alphabet)
     s2 = Sequence(id2, seq2, alphabet)
     return s1, s2
+
+
+def write_report(path: str, report: str) -> None:
+    """
+    Write the alignment report to a text file.
+    """
+    with open(path, "w") as f:
+        f.write(report)
+
+
+def format_report(
+    seq1: Sequence,
+    seq2: Sequence,
+    aligned1: str,
+    aligned2: str,
+    match: int,
+    mismatch: int,
+    gap: int,
+) -> str:
+    """
+    Format alignment parameters, sequences, alignment, and metrics into a report string.
+    """
+    length = len(aligned1)
+    identical = sum(1 for a, b in zip(aligned1, aligned2) if a == b)
+    percent = (identical / length * 100) if length > 0 else 0.0
+    total_gaps = aligned1.count("-") + aligned2.count("-")
+
+    lines = [
+        "Parameters:",
+        f"  Match score: {match}",
+        f"  Mismatch score: {mismatch}",
+        f"  Gap penalty: {gap}",
+        "",
+        "Sequences:",
+        f"  {seq1.id}: {seq1.sequence}",
+        f"  {seq2.id}: {seq2.sequence}",
+        "",
+        "Alignment:",
+        f"  {aligned1}",
+        f"  {aligned2}",
+        "",
+        "Statistics:",
+        f"  Alignment length: {length}",
+        f"  Identical positions: {identical}",
+        f"  Percentage identity: {percent:.2f}%",
+        f"  Total gaps: {total_gaps}",
+    ]
+    return "\n".join(lines)

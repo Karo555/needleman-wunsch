@@ -1,8 +1,9 @@
 import argparse
+import os
 from typing import Optional
 
 from src.aligner.core import build_score_matrix, traceback
-from src.aligner.io import read_manual, read_fasta
+from src.aligner.io import format_report, read_manual, read_fasta, write_report
 
 
 def parse_args(args=None):
@@ -46,8 +47,8 @@ def parse_args(args=None):
     parser.add_argument(
         "--output",
         type=str,
-        default="alignment.txt",
-        help="Filename for text output report",
+        default=None,
+        help="Optional custom filename for text output report",
     )
     parser.add_argument(
         "--plot",
@@ -91,7 +92,30 @@ def main():
     print(aln1)
     print(aln2)
 
-    # TODO: compute stats and write report
+    # Format report
+    report = format_report(seq1, seq2, aln1, aln2, args.match, args.mismatch, args.gap)
+
+    # Prepare output filename
+    # Ensure reports directory exists
+    reports_dir = "reports"
+    os.makedirs(reports_dir, exist_ok=True)
+    if args.output:
+        output_file = (
+            os.path.join(reports_dir, args.output)
+            if not args.output.startswith(reports_dir)
+            else args.output
+        )
+    else:
+        # default name: seq1_seq2_m<M>_mm<MM>_g<gap>.txt
+        fname = f"{seq1.id}_{seq2.id}_m{args.match}_mm{args.mismatch}_g{args.gap}.txt"
+        output_file = os.path.join(reports_dir, fname)
+
+    # Print and write report
+    print(report)
+    write_report(output_file, report)
+    print(f"Report written to {output_file}")
+
+    # TODO: handle plotting with --plot
 
 
 if __name__ == "__main__":
