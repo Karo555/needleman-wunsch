@@ -115,14 +115,12 @@ def format_multi_report(
     """
     lines: List[str] = []
 
-    # Header with parameters and raw sequences
     lines.append("Needleman–Wunsch Multi‐Path Alignment Report")
     lines.append(f"Parameters: match={match}, mismatch={mismatch}, gap={gap}")
     lines.append(f"Sequence 1: {seq1.id}  {seq1.sequence}")
     lines.append(f"Sequence 2: {seq2.id}  {seq2.sequence}")
-    lines.append("")  # blank line
+    lines.append("")
 
-    # One block per alignment path
     for idx, (aln1, aln2) in enumerate(alignments, start=1):
         length = len(aln1)
         matches = sum(1 for a, b in zip(aln1, aln2) if a == b and a != "-")
@@ -135,7 +133,7 @@ def format_multi_report(
         lines.append(f"Length: {length}")
         lines.append(f"Identical positions: {matches} ({identity_pct:.2f}%)")
         lines.append(f"Total gaps: {gaps}")
-        lines.append("")  # blank line between paths
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -167,7 +165,6 @@ def create_output_dict(
       - full score matrix
       - list of alignments with stats
     """
-    # per‐alignment stats
     paths = []
     for aln1, aln2 in alignments:
         length = len(aln1)

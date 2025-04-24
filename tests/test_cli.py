@@ -1,6 +1,7 @@
 import pytest
 import sys
 import json
+import aligner.cli as cli
 from pathlib import Path
 from src.aligner.cli import parse_args
 
@@ -45,20 +46,16 @@ def test_help_shows_usage(capsys):
 
 
 def test_cli_matrix_export(tmp_path, monkeypatch):
-    # Prep src on path
     project = Path(__file__).parent.parent
     monkeypatch.syspath_prepend(str(project / "src"))
 
-    # Create minimal FASTAs
     data = tmp_path / "data"
     data.mkdir()
     (data / "s1.fasta").write_text(">s1\nA\n")
     (data / "s2.fasta").write_text(">s2\nA\n")
 
-    # Move into tmp dir so relative paths work
     monkeypatch.chdir(tmp_path)
 
-    # Set argv
     out_csv = tmp_path / "matrix_out.csv"
     sys.argv = [
         "aligner.cli",
@@ -69,37 +66,26 @@ def test_cli_matrix_export(tmp_path, monkeypatch):
         str(out_csv),
     ]
 
-    # Run
-    import aligner.cli as cli
-
     cli.main()
 
-    # Validate the CSV for a simple match/mismatch/gap setup
     text = out_csv.read_text().splitlines()
-    # For two single 'A's with default match=1,mismatch=-1,gap=-2, matrix is 2×2:
-    # [0, -2]
-    # [-2, 1]
     assert text == ["0,-2", "-2,1"]
 
 
 def test_cli_json_output(tmp_path, monkeypatch):
-    # prep src on path
     project = Path(__file__).parent.parent
     monkeypatch.syspath_prepend(str(project / "src"))
 
-    # make FASTAs
     data = tmp_path / "data"
     data.mkdir()
     (data / "s1.fasta").write_text(">s1\nA\n")
     (data / "s2.fasta").write_text(">s2\nA\n")
 
-    # make output folder and cwd
     monkeypatch.chdir(tmp_path)
     reports = tmp_path / "reports"
     reports.mkdir()
     out_json = reports / "out.json"
 
-    # simulate CLI
     sys.argv = [
         "aligner.cli",
         "--input",
@@ -108,11 +94,9 @@ def test_cli_json_output(tmp_path, monkeypatch):
         "--json",
         str(out_json),
     ]
-    import aligner.cli as cli
 
     cli.main()
 
-    # assert JSON exists and has expected keys
     assert out_json.exists()
     payload = json.loads(out_json.read_text())
     assert payload["parameters"]["match"] == 1
@@ -122,23 +106,17 @@ def test_cli_json_output(tmp_path, monkeypatch):
 
 
 def test_cli_html_output(tmp_path, monkeypatch):
-    import sys
-    from pathlib import Path
 
-    # Prep src/ on path
     project = Path(__file__).parent.parent
     monkeypatch.syspath_prepend(str(project / "src"))
 
-    # Write minimal FASTAs
     data = tmp_path / "data"
     data.mkdir()
     (data / "s1.fasta").write_text(">s1\nA\n")
     (data / "s2.fasta").write_text(">s2\nA\n")
 
-    # CWD = tmp to use relative paths
     monkeypatch.chdir(tmp_path)
 
-    # Set argv
     out_html = tmp_path / "report.html"
     sys.argv = [
         "aligner.cli",
@@ -149,31 +127,23 @@ def test_cli_html_output(tmp_path, monkeypatch):
         str(out_html),
     ]
 
-    import aligner.cli as cli
-
     cli.main()
 
-    # Check file exists and contains our header
     text = out_html.read_text()
     assert "<h1>Needleman" in text
     assert "Sequence 1: s1: A" in text
 
 
 def test_cli_pdf_output(tmp_path, monkeypatch):
-    # Prep src/ on path
     project = Path(__file__).parent.parent
     monkeypatch.syspath_prepend(str(project / "src"))
-
-    # Write minimal FASTAs
     data = tmp_path / "data"
     data.mkdir()
     (data / "s1.fasta").write_text(">s1\nA\n")
     (data / "s2.fasta").write_text(">s2\nA\n")
 
-    # CWD = tmp so relative paths work
     monkeypatch.chdir(tmp_path)
 
-    # CLI args
     out_pdf = tmp_path / "report.pdf"
     sys.argv = [
         "aligner.cli",
@@ -186,9 +156,5 @@ def test_cli_pdf_output(tmp_path, monkeypatch):
         "plots/heatmap.png",
     ]
 
-    import aligner.cli as cli
-
     cli.main()
-
-    # Verify PDF was created
     assert out_pdf.exists() and out_pdf.stat().st_size > 0

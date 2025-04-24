@@ -110,13 +110,19 @@ def parse_args(args=None):
         help="Filename for PDF summary report",
     )
 
+    parser.add_argument(
+        "--alphabet",
+        choices=["dna", "protein"],
+        default="dna",
+        help="Alphabet for sequences (dna or protein)",
+    )
+
     return parser.parse_args(args)
 
 
 def main():
     args = parse_args()
 
-    # Setup directories
     if args.output:
         os.makedirs(os.path.dirname(args.output) or ".", exist_ok=True)
     if args.plot:
@@ -128,25 +134,21 @@ def main():
     if args.html_out:
         os.makedirs(os.path.dirname(args.html_out) or ".", exist_ok=True)
 
-    # 1) Load sequences (using default “dna” alphabet)
     if args.manual:
-        seq1, seq2 = read_manual()
+        seq1, seq2 = read_manual(args.alphabet)
     else:
-        recs1 = read_fasta(args.input[0])
-        recs2 = read_fasta(args.input[1])
+        recs1 = read_fasta(args.input[0], args.alphabet)
+        recs2 = read_fasta(args.input[1], args.alphabet)
         if len(recs1) != 1 or len(recs2) != 1:
             raise ValueError("Each FASTA must contain exactly one record")
         seq1, seq2 = recs1[0], recs2[0]
 
-    # 2) Build the DP matrix
     matrix = build_score_matrix(seq1, seq2, args.match, args.mismatch, args.gap)
 
-    # 3) Optional raw‐matrix CSV
     if args.matrix_out:
         write_matrix(args.matrix_out, matrix)
         print(f"Score matrix CSV written to {args.matrix_out}")
 
-    # 4) Single vs all-paths
     if args.all_paths:
         align_list = trace_all_paths(
             matrix, seq1, seq2, args.match, args.mismatch, args.gap
@@ -163,13 +165,11 @@ def main():
             seq1, seq2, aln1, aln2, args.match, args.mismatch, args.gap
         )
 
-    # 5) Text report
     print(report_text)
     if args.output:
         write_report(args.output, report_text)
         print(f"Text report written to {args.output}")
 
-    # 6) JSON output
     if args.json_out:
         data = create_output_dict(
             seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
@@ -177,13 +177,10 @@ def main():
         write_json(args.json_out, data)
         print(f"Structured JSON written to {args.json_out}")
 
-    # 7) HTML output
     if args.html_out:
-        # compute relative image path for embedding
         img_ref = None
         if args.plot:
             img_ref = os.path.relpath(args.plot, start=os.path.dirname(args.html_out))
-        # reuse our JSON helper to get parameters + per-path stats
         data = create_output_dict(
             seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
         )
@@ -194,14 +191,11 @@ def main():
             f.write(html)
         print(f"HTML report written to {args.html_out}")
 
-    # 8) Heatmap (always last so the file exists before embedding)
     if args.plot:
         plot_matrix(matrix, args.plot)
         print(f"Heatmap saved to {args.plot}")
 
-    # 9) PDF summary export if requested
     if args.pdf_out:
-        # align_list and data already computed above
         data = create_output_dict(
             seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
         )
@@ -211,7 +205,7 @@ def main():
             seq2,
             data["alignments"],
             data["parameters"],
-            args.plot,  # pass the heatmap PNG path so it embeds
+            args.plot,
         )
         print(f"PDF report written to {args.pdf_out}")
 

@@ -16,7 +16,6 @@ def test_format_html_report(tmp_path):
     html = format_html_report(
         seq1, seq2, data["alignments"], data["parameters"], image_path="heatmap.png"
     )
-    # basic sanity checks
     assert "<h1>Needleman" in html
     assert "Match: 1" in html
     assert "Sequence 1: s1: A" in html

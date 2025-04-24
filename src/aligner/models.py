@@ -1,4 +1,3 @@
-# src/aligner/models.py
 import re
 from typing import Literal
 
@@ -25,10 +24,8 @@ class Sequence:
         Empty sequences are now allowed.
         """
         if self.alphabet.lower() == "dna":
-            # Allow zero or more A/C/G/T characters
             pat = r"^[ACGTacgt]*$"
         elif self.alphabet.lower() == "protein":
-            # Allow zero or more of the 20 standard amino acids
             pat = r"^[ACDEFGHIKLMNPQRSTVWYacdefghiklmnpqrstvwy]*$"
         else:
             raise ValueError(f"Unknown alphabet: {self.alphabet}")
@@ -39,7 +36,6 @@ class Sequence:
             )
 
     def __len__(self):
-        # length = number of letters in the sequence
         return len(self.sequence)
 
     def __repr__(self):

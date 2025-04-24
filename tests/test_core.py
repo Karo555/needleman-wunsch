@@ -7,13 +7,10 @@ def test_build_score_matrix_single_match():
     s1 = Sequence("s1", "A")
     s2 = Sequence("s2", "A")
     mat = build_score_matrix(s1, s2, match=1, mismatch=-1, gap=-1)
-    # matrix dimensions are (2x2)
     assert len(mat) == 2 and len(mat[0]) == 2
-    # initial row/column
     assert mat[0][0] == 0
     assert mat[0][1] == -1
     assert mat[1][0] == -1
-    # diagonal match
     assert mat[1][1] == 1
 
 
@@ -28,7 +25,6 @@ def test_build_score_matrix_with_gap():
     s1 = Sequence("s1", "A")
     s2 = Sequence("s2", "")
     mat = build_score_matrix(s1, s2, match=1, mismatch=-1, gap=-2)
-    # only one cell besides origin
     assert mat[1][0] == -2
 
 
@@ -55,6 +51,5 @@ def test_trace_all_paths_gap_variants():
     s2 = Sequence("s2", "A")
     mat = build_score_matrix(s1, s2, match=1, mismatch=-1, gap=-1)
     paths = trace_all_paths(mat, s1, s2, match=1, mismatch=-1, gap=-1)
-    # Only one optimal alignment exists here:
     expected = {("AG", "A-")}
     assert set(paths) == expected

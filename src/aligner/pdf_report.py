@@ -1,5 +1,3 @@
-# src/aligner/pdf_report.py
-
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image as RLImage
 from reportlab.platypus import Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
@@ -28,11 +26,9 @@ def write_pdf(
     styles = getSampleStyleSheet()
     story = []
 
-    # Title
     story.append(Paragraph("Needleman–Wunsch Alignment Report", styles["Title"]))
     story.append(Spacer(1, 12))
 
-    # Parameters
     param_data = [
         ["Match", parameters["match"]],
         ["Mismatch", parameters["mismatch"]],
@@ -50,7 +46,6 @@ def write_pdf(
     story.append(tbl)
     story.append(Spacer(1, 12))
 
-    # Sequences
     story.append(
         Paragraph(f"<b>Sequence 1:</b> {seq1.id}: {seq1.sequence}", styles["Normal"])
     )
@@ -59,13 +54,10 @@ def write_pdf(
     )
     story.append(Spacer(1, 12))
 
-    # Alignments
     for idx, path in enumerate(alignments, start=1):
         story.append(Paragraph(f"Path {idx}", styles["Heading2"]))
-        # alignment block
         story.append(Paragraph(path["aligned_seq1"], styles["Code"]))
         story.append(Paragraph(path["aligned_seq2"], styles["Code"]))
-        # stats table
         stats = [
             ["Length", path["length"]],
             ["Matches", f"{path['matches']} ({path['identity_pct']:.2f}%)"],
@@ -82,12 +74,9 @@ def write_pdf(
         story.append(t)
         story.append(Spacer(1, 12))
 
-    # Heatmap image
     if image_path:
         story.append(Paragraph("Score Matrix Heatmap", styles["Heading2"]))
-        # scale image to fit, adjust width/height as needed
         story.append(RLImage(image_path, width=400, height=400))
         story.append(Spacer(1, 12))
 
-    # Build the PDF
     doc.build(story)
