@@ -120,6 +120,13 @@ def trace_all_paths(
     paths: List[Tuple[str, str]] = []
 
     def recurse(i: int, j: int, a1: List[str], a2: List[str]):
+        """
+        Recursive function to find all paths in the scoring matrix.
+        :param i: Current row index
+        :param j: Current column index
+        :param a1: Current alignment for seq1
+        :param a2: Current alignment for seq2
+        """
         if len(paths) >= max_paths:
             return
         if i == 0 and j == 0:

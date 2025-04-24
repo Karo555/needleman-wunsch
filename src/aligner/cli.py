@@ -121,6 +121,9 @@ def parse_args(args=None):
 
 
 def main():
+    """
+    Main function to run the Needleman–Wunsch aligner from the command line.
+    """
     args = parse_args()
 
     if args.output:
@@ -147,7 +150,6 @@ def main():
 
     if args.matrix_out:
         write_matrix(args.matrix_out, matrix)
-        print(f"Score matrix CSV written to {args.matrix_out}")
 
     if args.all_paths:
         align_list = trace_all_paths(
@@ -165,17 +167,14 @@ def main():
             seq1, seq2, aln1, aln2, args.match, args.mismatch, args.gap
         )
 
-    print(report_text)
     if args.output:
         write_report(args.output, report_text)
-        print(f"Text report written to {args.output}")
 
     if args.json_out:
         data = create_output_dict(
             seq1, seq2, matrix, align_list, args.match, args.mismatch, args.gap
         )
         write_json(args.json_out, data)
-        print(f"Structured JSON written to {args.json_out}")
 
     if args.html_out:
         img_ref = None
@@ -189,11 +188,9 @@ def main():
         )
         with open(args.html_out, "w") as f:
             f.write(html)
-        print(f"HTML report written to {args.html_out}")
 
     if args.plot:
         plot_matrix(matrix, args.plot)
-        print(f"Heatmap saved to {args.plot}")
 
     if args.pdf_out:
         data = create_output_dict(
@@ -207,7 +204,6 @@ def main():
             data["parameters"],
             args.plot,
         )
-        print(f"PDF report written to {args.pdf_out}")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,26 @@ from typing import Literal
 class Sequence:
     """
     A simple container for an ID and a biological sequence string.
+    The sequence can be either DNA or protein, and the class validates the sequence
+    against the specified alphabet.
+    Attributes
+    ----------
+    id : str
+        The sequence ID.
+    sequence : str
+        The sequence string.
+    alphabet : str
+        The alphabet to validate the sequence agains
+    Methods
+    -------
+    __init__
+        Initialize the sequence objec
+    _validate
+        Validate the sequence against the specified alphabet.
+    __len__
+        Return the length of the sequence.
+    __repr__
+        Return a string representation of the sequence.
     """
 
     def __init__(

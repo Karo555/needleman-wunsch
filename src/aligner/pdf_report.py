@@ -21,6 +21,25 @@ def write_pdf(
       - Sequences
       - One or more alignment paths (with stats)
       - Optional heatmap image
+    Parameters
+    ----------
+    path
+        Path to save the PDF report.
+    seq1, seq2
+        The original Sequence objects.
+    alignments
+        List of dictionaries containing alignment information.
+    parameters
+        Dictionary containing the parameters used to generate the alignmen
+        - match
+        - mismatch
+        - gap
+    image_path
+        Path to the image to include in the report (optional).
+    Returns
+    -------
+    None
+        The function does not return anything. It creates a PDF file at the specified path.
     """
     doc = SimpleDocTemplate(path, pagesize=letter)
     styles = getSampleStyleSheet()

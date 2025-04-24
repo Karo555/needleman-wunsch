@@ -6,6 +6,28 @@ from aligner.models import Sequence
 
 
 def read_fasta(path: str, alphabet: str = "dna") -> list[Sequence]:
+    """
+    Read a FASTA file and return a list of Sequence objects.
+    Each sequence is represented by a Sequence object with the following attributes:
+    - id: The sequence ID (header line without the leading '>').
+    - sequence: The sequence string (all lines after the header line).
+    - alphabet: The alphabet used for the sequence (e.g., "dna", "protein").
+    The function raises a ValueError if the file is empty or if there are no valid sequences.
+    Parameters
+    ----------
+    path : str
+        Path to the FASTA file.
+    alphabet : str
+        The alphabet used for the sequence (default is "dna").
+    Returns
+    -------
+    list[Sequence]
+        A list of Sequence objects representing the sequences in the FASTA file.
+    Raises
+    ------
+    ValueError
+        If the file is empty or if there are no valid sequences.
+    """
     sequences = []
     header = None
     seq_lines: list[str] = []
@@ -35,6 +57,22 @@ def read_fasta(path: str, alphabet: str = "dna") -> list[Sequence]:
 
 
 def read_manual(alphabet: str = "dna") -> tuple[Sequence, Sequence]:
+    """
+    Read two sequences from user input.
+    Parameters
+    ----------
+    alphabet : str
+        The alphabet used for the sequences (default is "dna").
+    Returns
+    -------
+    tuple[Sequence, Sequence]
+        A tuple of Sequence objects representing the sequences read from user inpu
+    Raises
+    ------
+    ValueError
+        If the input is invalid or if the sequences are empty.
+    """
+
     id1 = input("Sequence 1 ID: ").strip()
     seq1_str = input("Sequence 1: ").strip()
     id2 = input("Sequence 2 ID: ").strip()
@@ -48,6 +86,17 @@ def read_manual(alphabet: str = "dna") -> tuple[Sequence, Sequence]:
 def write_report(path: str, report: str) -> None:
     """
     Write the alignment report to a text file.
+    The report includes alignment parameters, sequences, alignment, and metrics.
+    Parameters
+    ----------
+    path : str
+        The path to the file to write the report to.
+    report : str
+        The alignment report to write to the file.
+    Raises
+    ------
+    IOError
+        If there is an error writing to the file.
     """
     with open(path, "w") as f:
         f.write(report)
@@ -64,6 +113,22 @@ def format_report(
 ) -> str:
     """
     Format alignment parameters, sequences, alignment, and metrics into a report string.
+    Parameters
+    ----------
+    seq1, seq2
+        The original Sequence objects.
+    aligned1, aligned2
+        The aligned sequences.
+    match, mismatch, gap
+        The number of matches, mismatches, and gaps in the alignmen
+    Returns
+    -------
+    str
+        The formatted alignment report string.
+    Raises
+    ------
+    ValueError
+        If the aligned sequences are empty or if the lengths do not match.
     """
     length = len(aligned1)
     identical = sum(1 for a, b in zip(aligned1, aligned2) if a == b)
@@ -142,6 +207,18 @@ def write_matrix(path: str, matrix: List[List[int]]) -> None:
     """
     Write the DP score matrix to CSV.
     Each row of the matrix becomes one line of comma-separated values.
+    The first row is the header with column indices.
+    The first column is the row index.
+    Parameters
+    ----------
+    path : str
+        The path to the file to write the matrix to.
+    matrix : list[list[int]]
+        The DP score matrix to write to the file.
+    Raises
+    ------
+    IOError
+        If there is an error writing to the file.
     """
     with open(path, "w", newline="") as csvfile:
         writer = csv.writer(csvfile)
@@ -164,6 +241,24 @@ def create_output_dict(
       - parameters
       - full score matrix
       - list of alignments with stats
+    Parameters
+    ----------
+    seq1, seq2
+        The original Sequence objects.
+    matrix
+        The DP score matrix.
+    alignments
+        List of (aligned_seq1, aligned_seq2) tuples.
+    match, mismatch, gap
+        Scoring parameters.
+    Returns
+    -------
+    dict
+        A dictionary containing the sequences, parameters, matrix, and alignments.
+    Raises
+    ------
+    ValueError
+        If the sequences are empty or if the lengths do not match.
     """
     paths = []
     for aln1, aln2 in alignments:
@@ -193,6 +288,16 @@ def create_output_dict(
 def write_json(path: str, data: Dict) -> None:
     """
     Write the dict `data` out as pretty JSON.
+    Parameters
+    ----------
+    path
+        The path to write the JSON to.
+    data
+        The data to write.e_path, "w"
+    Raises
+    ------
+    FileNotFoundError
+        If the path does not exist.
     """
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
