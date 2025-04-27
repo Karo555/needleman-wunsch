@@ -25,9 +25,8 @@ You’ll be prompted to enter:
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --match 2 --mismatch -1 --gap -2`
 
 4. Enumerate all optimal alignments <br>
-`needleman-wunsch --input data/seq1.fasta data/seq2.fasta --all-paths --output reports/all_paths.txt`
-
-Lists every equally optimal alignment and writes them to reports/all_paths.txt.
+`needleman-wunsch --input data/seq1.fasta data/seq2.fasta --all-paths --output reports/all_paths.txt` <br>
+--> Lists every equally optimal alignment and write the text report to /reports
 
 5. Export raw DP matrix as CSV <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --matrix-out reports/matrix.csv`
