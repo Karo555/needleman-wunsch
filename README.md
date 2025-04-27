@@ -29,9 +29,9 @@ You’ll be prompted to enter:
 --> Lists every equally optimal alignment and write the text report to /reports
 
 5. Export raw DP matrix as CSV <br>
-`needleman-wunsch --input data/seq1.fasta data/seq2.fasta --matrix-out reports/matrix.csv`
+`needleman-wunsch --input data/seq1.fasta data/seq2.fasta --matrix-out reports/matrix.csv` <br>
 
-The full (N+1)×(M+1) score matrix is saved in comma‐separated format for downstream analysis
+--> score matrix is saved in .csv at /reports.
 
 6. Structured JSON output <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --json reports/alignment.json`
