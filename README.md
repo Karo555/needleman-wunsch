@@ -49,14 +49,9 @@ You’ll be prompted to enter:
 8. HTML summary report <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --plot plots/heatmap.png --html reports/alignment.html`
 
-Generates a standalone HTML page embedding:
+--> generates a standalone HTML page embedding parameters & sequences, all alignments (or just the single optimal one), inline statistics, the heatmap image
 
-Parameters & sequences
-All alignments (or just the single optimal one)
-Inline statistics
-The heatmap image (correctly linked)
-
-Open it in your browser via:
+--> Open it in your browser via:
 `python -m http.server 8000`
 
 then visit `http://localhost:8000/reports/alignment.html`
