@@ -26,22 +26,20 @@ You’ll be prompted to enter:
 
 4. Enumerate all optimal alignments <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --all-paths --output reports/all_paths.txt` <br>
+
 --> Lists every equally optimal alignment and write the text report to /reports
 
 5. Export raw DP matrix as CSV <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --matrix-out reports/matrix.csv` <br>
 
---> score matrix is saved in .csv at /reports.
+--> score matrix is saved in .csv at /reports
 
 6. Structured JSON output <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --json reports/alignment.json`
 
-Produces a JSON file containing: <br>
+--> produces a JSON file containing original sequences and IDs, scoring parameters, full DP matrix, all alignments with per-path statistics <br>
+--> saved at /reports
 
-Original sequences and IDs
-Scoring parameters
-Full DP matrix
-All alignments with per-path statistics
 
 7. Heatmap visualization <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --plot plots/heatmap.png`
