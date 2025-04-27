@@ -2,14 +2,14 @@ import argparse
 import os
 from aligner.html_report import format_html_report
 from typing import Optional
-from src.aligner.plot import plot_matrix
+from aligner.plot import plot_matrix
 from aligner.pdf_report import write_pdf
-from src.aligner.core import (
+from aligner.core import (
     build_score_matrix,
     traceback as single_traceback,
     trace_all_paths,
 )
-from src.aligner.io import (
+from aligner.io import (
     create_output_dict,
     format_multi_report,
     format_report,
@@ -169,6 +169,9 @@ def main():
 
     if args.output:
         write_report(args.output, report_text)
+    else:
+        # Print report to console when no output file is specified
+        print(report_text)
 
     if args.json_out:
         data = create_output_dict(

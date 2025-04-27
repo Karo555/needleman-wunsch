@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from src.aligner.models import Sequence
+from aligner.models import Sequence
 
 
 def build_score_matrix(

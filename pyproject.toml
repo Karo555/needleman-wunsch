@@ -5,25 +5,26 @@ build-backend = "setuptools.build_meta"
 [tool.black]
 line-length = 88
 
-[metadata]
-name = needleman-wunsch
-version = 0.1.0
-description = Needleman-Wunsch
-license = MIT
+[project]
+name = "needleman-wunsch"
+version = "0.1.0"
+description = "Needleman-Wunsch"
+license = {text = "MIT"}
+dependencies = [
+    "matplotlib",
+]
 
+[project.optional-dependencies]
+html = ["jinja2"]
+pdf = ["reportlab"]
 
-[options]
-package_dir = 
-    = src
-packages = find:
+[tool.setuptools]
+package-dir = {"" = "src"}
+packages = {find = {where = ["src"]}}
 
-[options.packages.find]
-where = src
+[project.scripts]
+needleman-wunsch = "aligner.cli:main"
 
-[options.entry_points]
-controle_scripts = 
-    needleman-wunsch = aligner.cli:main
-
-[mypy]
-mypy_path = src
-ignore_missing_imports = True
+[tool.mypy]
+mypy_path = "src"
+ignore_missing_imports = true

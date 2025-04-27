@@ -1,7 +1,6 @@
 import csv
 import json
 from typing import Dict, List, Tuple
-from src.aligner.models import Sequence
 from aligner.models import Sequence
 
 
