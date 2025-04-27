@@ -3,8 +3,7 @@ bIOINFORMATICS @WUST
 
 # Installation
 `git clone https://github.com/Karo555/needleman-wunsch.git` <br>
-`cd needleman-wunsch-aligner` <br>
-`pip install -e .[html,pdf]`
+`pip install -e ."[html,pdf]"`
 
 # Usage
 1. Basic DNA alignment (manual input) <br>
@@ -12,8 +11,8 @@ bIOINFORMATICS @WUST
 
 You’ll be prompted to enter:
 - Sequence 1 ID
-- Sequence 2 ID
 - Sequence 1
+- Sequence 2 ID
 - Sequence 2
 
 2. FASTA file input <br>
