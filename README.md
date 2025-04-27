@@ -3,7 +3,7 @@ bIOINFORMATICS @WUST
 
 # Installation
 `git clone https://github.com/Karo555/needleman-wunsch.git` <br>
-`pip install -e ."[html,pdf]"`
+`pip install -e ".[html,pdf]"`
 
 # Usage
 1. Basic DNA alignment (manual input) <br>
