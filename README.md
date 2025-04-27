@@ -18,8 +18,8 @@ You’ll be prompted to enter:
 2. FASTA file input <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --output reports/alignment.txt` <br>
 
-data/seq1.fasta and data/seq2.fasta each contain exactly one record. <br>
-The text report is saved to reports/alignment.txt <br>
+--> data/seq1.fasta and data/seq2.fasta each contain exactly one record <br>
+--> the text report is saved to /reports <br>
 
 3. Custom scoring. Override match, mismatch, and gap scores. <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --match 2 --mismatch -1 --gap -2`
