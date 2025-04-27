@@ -44,7 +44,7 @@ You’ll be prompted to enter:
 7. Heatmap visualization <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --plot plots/heatmap.png`
 
-Renders the DP matrix as a heatmap PNG saved to plots/heatmap.png.
+--> renders the DP matrix as a heatmap PNG saved at /plots
 
 8. HTML summary report <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --plot plots/heatmap.png --html reports/alignment.html`
