@@ -59,6 +59,9 @@ then visit `http://localhost:8000/reports/alignment.html`
 9. PDF summary report <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --plot plots/heatmap.png --pdf reports/alignment.pdf`
 
+--> saved to /reports
+
+
 10. one shot <br>
 `needleman-wunsch --input data/seq1.fasta data/seq2.fasta --all-paths --match 2 --mismatch -1 --gap -2 --output reports/alignment.txt --matrix-out reports/matrix.csv --json reports/alignment.json --plot plots/heatmap.png --html reports/alignment.html --pdf reports/alignment.pdf`
 
